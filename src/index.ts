@@ -12,6 +12,8 @@ import { registerFarmRoutes } from './api/farm.js';
 import { registerMarketRoutes } from './api/market.js';
 import { registerPlayerRoutes } from './api/player.js';
 import { registerSocketHandlers } from './ws/socketHandlers.js';
+import { registerRelationshipRoutes } from './api/relationships.js';
+import { RelationshipEngine } from './game/RelationshipEngine.js';
 
 const PORT = parseInt(process.env.PORT ?? '3001');
 
@@ -23,6 +25,7 @@ async function main() {
   const fastify = Fastify({ logger: false });
   await fastify.register(cors, { origin: true, credentials: true });
 
+  // Attach Socket.io to Fastify's server BEFORE listen()
   const io = new SocketServer(fastify.server, {
     cors: { origin: '*', credentials: true },
   });
@@ -31,6 +34,7 @@ async function main() {
   const plotManager = new PlotManager(db);
   const skillEngine = new SkillEngine(db);
   const gameLoop    = new GameLoop(db, io, questEngine);
+  const relationshipEngine = new RelationshipEngine(db);
 
   fastify.get('/health', async () => ({
     status: 'ok',
@@ -42,12 +46,16 @@ async function main() {
   await registerMarketRoutes(fastify, { db, skillEngine, questEngine });
   await registerPlayerRoutes(fastify, { db, skillEngine, questEngine });
 
-  registerSocketHandlers(io, { db, plotManager, skillEngine, questEngine, gameLoop });
+  await registerRelationshipRoutes(fastify, { db, relationshipEngine });
+  registerSocketHandlers(io, { db, plotManager, gameLoop });
 
   await fastify.listen({ port: PORT, host: '0.0.0.0' });
   console.log(`[Server] Running on port ${PORT}`);
 
   gameLoop.start();
+
+  // Run relationship decay daily
+  setInterval(() => relationshipEngine.applyDecay(), 24 * 60 * 60 * 1000);
 
   const shutdown = async () => {
     gameLoop.stop();

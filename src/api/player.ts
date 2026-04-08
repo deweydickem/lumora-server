@@ -87,10 +87,9 @@ export async function registerPlayerRoutes(fastify: FastifyInstance, deps: Deps)
     ]);
     return { skills, bonuses };
   });
-}
 
-// ── NPC CHAT — proxies Anthropic server-side, key never hits the browser ──────
-fastify.post('/api/npc/chat', async (req, reply) => {
+  // ── NPC CHAT — proxies Anthropic server-side, key never hits the browser ────
+  fastify.post('/api/npc/chat', async (req, reply) => {
   const body = z.object({
     npcName: z.string(),
     npcPersonality: z.string(),
@@ -119,3 +118,4 @@ fastify.post('/api/npc/chat', async (req, reply) => {
     return reply.status(500).send({ error: 'NPC unavailable' });
   }
 });
+}

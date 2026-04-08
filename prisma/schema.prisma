@@ -178,3 +178,18 @@ model FeePulse {
 
   @@map("fee_pulses")
 }
+
+// ── NPC RELATIONSHIPS ─────────────────────────────────────────────────────────
+model NPCRelationship {
+  id          String   @id @default(cuid())
+  playerId    String
+  npcName     String                        // "Mira" | "Finn" | "Lyra"
+  hearts      Int      @default(0)          // 0–10
+  lastGiftAt  DateTime?
+  totalGifts  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([playerId, npcName])
+  @@map("npc_relationships")
+}

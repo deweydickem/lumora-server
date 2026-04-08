@@ -8,15 +8,11 @@
 import { Server as SocketServer, Socket } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 import { PlotManager } from '../game/PlotManager.js';
-import { SkillEngine } from '../game/SkillEngine.js';
-import { QuestEngine } from '../game/QuestEngine.js';
 import { GameLoop } from '../game/GameLoop.js';
 
 interface Deps {
   db: PrismaClient;
   plotManager: PlotManager;
-  skillEngine: SkillEngine;
-  questEngine: QuestEngine;
   gameLoop: GameLoop;
 }
 
