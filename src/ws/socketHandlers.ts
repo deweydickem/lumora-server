@@ -35,7 +35,7 @@ const pendingInvites = new Map<string, {
 function farmRoom(playerId: string) { return `farm:${playerId}`; }
 
 export function registerSocketHandlers(io: SocketServer, deps: Deps) {
-  const { db, plotManager, questEngine, gameLoop } = deps;
+  const { db, plotManager, gameLoop } = deps;
 
   io.on('connection', (socket: Socket) => {
     console.log(`[Socket] Client connected: ${socket.id}`);
