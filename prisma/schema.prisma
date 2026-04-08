@@ -193,3 +193,17 @@ model NPCRelationship {
   @@unique([playerId, npcName])
   @@map("npc_relationships")
 }
+
+model NPCRelationship {
+  id          String   @id @default(cuid())
+  playerId    String
+  npcName     String
+  hearts      Int      @default(0)
+  lastGiftAt  DateTime?
+  totalGifts  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([playerId, npcName])
+  @@map("npc_relationships")
+}
