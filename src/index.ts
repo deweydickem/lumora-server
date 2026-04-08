@@ -72,11 +72,9 @@ async function main() {
   registerSocketHandlers(io, { db, plotManager, skillEngine, questEngine, gameLoop });
 
   // ── START ─────────────────────────────────────────────────────────────────
-  await fastify.ready();
-  httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`[Server] Lumora server running on port ${PORT}`);
-    console.log(`[Server] Environment: ${process.env.NODE_ENV ?? 'development'}`);
-  });
+  await fastify.listen({ port: PORT, host: '0.0.0.0' });
+  console.log(`[Server] Lumora server running on port ${PORT}`);
+  console.log(`[Server] Environment: ${process.env.NODE_ENV ?? 'development'}`);
 
   gameLoop.start();
 
