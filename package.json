@@ -1,0 +1,17 @@
+{
+  "name": "lumora-server",
+  "version": "0.3.0",
+  "type": "module",
+  "scripts": {
+    "start": "npx prisma db push && node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "@prisma/client": "^5.14.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "prisma": "^5.14.0",
+    "socket.io": "^4.7.5"
+  }
+}

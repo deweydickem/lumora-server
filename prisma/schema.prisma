@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id            String   @id @default(cuid())
+  privyId       String   @unique
+  username      String   @unique
+  walletAddress String?
+  createdAt     DateTime @default(now())
+  lastSeenAt    DateTime @default(now())
+  gold          Int      @default(5)
+  seeds         Int      @default(5)
+  lumiBalance   Float    @default(0)
+  lumiTotal     Float    @default(0)
+  inventory     Json     @default("{\"WHEAT\":0,\"CARROT\":0,\"CORN\":0,\"bread\":0,\"stew\":0,\"wrap\":0,\"ale\":0}")
+  upgrades      Json     @default("{\"scarecrow\":0,\"irr\":0,\"barn\":0,\"fert\":0}")
+  plots         Plot[]
+  skills        PlayerSkill[]
+  @@map("players")
+}
+
+model Plot {
+  id         String   @id @default(cuid())
+  playerId   String
+  player     Player   @relation(fields: [playerId], references: [id])
+  col        Int
+  row        Int
+  fertility  Float    @default(0.1)
+  isLocked   Boolean  @default(false)
+  isWatered  Boolean  @default(false)
+  state      String   @default("EMPTY")
+  cropType   String?
+  plantedAt  DateTime?
+  readyAt    DateTime?
+  updatedAt  DateTime @updatedAt
+  @@unique([playerId, col, row])
+  @@map("plots")
+}
+
+model PlayerSkill {
+  id       String @id @default(cuid())
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id])
+  skill    String
+  xp       Int    @default(0)
+  level    Int    @default(1)
+  @@unique([playerId, skill])
+  @@map("player_skills")
+}
+
+model NPCRelationship {
+  id         String    @id @default(cuid())
+  playerId   String
+  npcName    String
+  hearts     Int       @default(0)
+  lastGiftAt DateTime?
+  totalGifts Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  @@unique([playerId, npcName])
+  @@map("npc_relationships")
+}
+
+model MarketPrice {
+  id        String   @id @default(cuid())
+  item      String   @unique
+  price     Float
+  updatedAt DateTime @updatedAt
+  @@map("market_prices")
+}
+
+model FeePulse {
+  id         String   @id @default(cuid())
+  volume     Float
+  multiplier Float
+  lumiMinted Float
+  createdAt  DateTime @default(now())
+  @@map("fee_pulses")
+}
