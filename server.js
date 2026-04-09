@@ -194,8 +194,13 @@ app.post('/api/dev/wipe', async (req, res) => {
     await db.player.deleteMany({});
     // Reset market prices
     await db.marketPrice.deleteMany({});
-    // Kick all connected players
-    io.emit('server:full', { message: 'Server wiped by admin. Please refresh and rejoin!' });
+    // Wipe all connected players' state and force refresh
+    io.emit('server:wipe', { message: 'Server wiped by admin. Resetting...' });
+    // Clear server-side player tracking
+    onlinePlayers.clear();
+    connected.clear();
+    pendingInvites.clear();
+    pendingTrades.clear();
     console.log('[DEV] Full wipe completed');
     res.json({ message: 'All player data wiped. ' + (await db.player.count()) + ' players remaining.' });
   } catch (err) {
