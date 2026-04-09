@@ -20,6 +20,9 @@ model Player {
   lumiTotal     Float    @default(0)
   inventory     Json     @default("{\"WHEAT\":0,\"CARROT\":0,\"CORN\":0,\"bread\":0,\"stew\":0,\"wrap\":0,\"ale\":0}")
   upgrades      Json     @default("{\"scarecrow\":0,\"irr\":0,\"barn\":0,\"fert\":0}")
+  gear          Json     @default("{\"shotgun\":false,\"ammo\":0,\"rod\":false,\"bait\":0,\"axe\":false,\"pickaxe\":false,\"huntingLicense\":false,\"fishingLicense\":false,\"timberPermit\":false}")
+  inventoryExt  Json     @default("{\"feathers\":0,\"meat\":0,\"fish\":0,\"wood\":0,\"stone\":0,\"goldNugget\":0,\"diamond\":0,\"legendaryPelt\":0,\"ancientWood\":0,\"enchantedBranch\":0,\"pearl\":0,\"ancientCoin\":0,\"ancientSeed\":0}")
+  ownedParcels  Json     @default("[]")
   plots         Plot[]
   skills        PlayerSkill[]
   @@map("players")
