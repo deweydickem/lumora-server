@@ -58,7 +58,8 @@ let gameState = {
   pulses: 0,
 };
 
-const craftJobs = new Map(); // jobId → { playerId, recipe, completesAt }
+const craftJobs    = new Map(); // jobId → { playerId, recipe, completesAt }
+const pendingTrades = new Map(); // tradeId → trade object
 
 // ── HEALTH ────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
@@ -665,6 +666,145 @@ io.on('connection', socket => {
     socket.to(player?.room || 'world').emit('player:emote', { playerId, emote: data.emote });
   });
 
+
+  // ── TRADE SYSTEM ──────────────────────────────────────────────────────────
+  socket.on('trade:propose', async data => {
+    const fromId = connected.get(socket.id);
+    if (!fromId) return;
+    const from = onlinePlayers.get(fromId);
+    if (!from) return;
+
+    const { toPlayerId, gold = 0, items = {} } = data;
+
+    // Validate sender has the gold
+    try {
+      const sender = await db.player.findUnique({ where: { id: fromId } });
+      if (!sender || sender.gold < gold) {
+        socket.emit('error', { message: 'Not enough gold for that trade' });
+        return;
+      }
+    } catch { return; }
+
+    // Generate trade ID and store pending trade
+    const tradeId = `trade_${fromId}_${Date.now()}`;
+    pendingTrades.set(tradeId, {
+      fromId, fromUsername: from.username,
+      toId: toPlayerId,
+      gold, items,
+      createdAt: Date.now(),
+    });
+
+    // Notify recipient
+    io.to(`player:${toPlayerId}`).emit('trade:incoming', {
+      id: tradeId,
+      fromId,
+      fromUsername: from.username,
+      gold, items,
+    });
+
+    socket.emit('trade:proposed', { tradeId, to: toPlayerId });
+  });
+
+  socket.on('trade:accept', async data => {
+    const acceptorId = connected.get(socket.id);
+    if (!acceptorId) return;
+
+    const trade = pendingTrades.get(data.tradeId);
+    if (!trade || trade.toId !== acceptorId) {
+      socket.emit('error', { message: 'Trade not found or expired' });
+      return;
+    }
+
+    pendingTrades.delete(data.tradeId);
+
+    // Apply the gift to acceptor
+    try {
+      const updates = {};
+      if (trade.gold > 0) {
+        const sender = await db.player.findUnique({ where: { id: trade.fromId } });
+        if (!sender || sender.gold < trade.gold) {
+          socket.emit('error', { message: 'Sender no longer has enough gold' });
+          return;
+        }
+        // Deduct from sender
+        await db.player.update({
+          where: { id: trade.fromId },
+          data: { gold: { decrement: trade.gold } },
+        });
+        // Add to acceptor
+        await db.player.update({
+          where: { id: acceptorId },
+          data: { gold: { increment: trade.gold } },
+        });
+      }
+
+      // Notify both parties
+      io.to(`player:${acceptorId}`).emit('trade:accepted', {
+        gold: trade.gold,
+        items: trade.items,
+        fromUsername: trade.fromUsername,
+      });
+      io.to(`player:${trade.fromId}`).emit('trade:accepted', {
+        gold: 0,
+        items: {},
+        fromUsername: onlinePlayers.get(acceptorId)?.username || 'Player',
+        message: 'Trade accepted!',
+      });
+
+      console.log(`[Trade] ${trade.fromUsername} → ${onlinePlayers.get(acceptorId)?.username}: ${trade.gold}g, items:${JSON.stringify(trade.items)}`);
+    } catch (err) {
+      console.error('[Trade]', err.message);
+      socket.emit('error', { message: 'Trade failed: ' + err.message });
+    }
+  });
+
+  socket.on('trade:decline', data => {
+    const declinerId = connected.get(socket.id);
+    if (!declinerId) return;
+
+    const trade = pendingTrades.get(data.tradeId);
+    if (!trade) return;
+    pendingTrades.delete(data.tradeId);
+
+    const decliner = onlinePlayers.get(declinerId);
+    io.to(`player:${trade.fromId}`).emit('trade:declined', {
+      username: decliner?.username || 'Player',
+    });
+  });
+
+  socket.on('trade:gift', async data => {
+    const fromId = connected.get(socket.id);
+    if (!fromId) return;
+    const from = onlinePlayers.get(fromId);
+    if (!from) return;
+
+    const { toPlayerId, gold = 0, items = {} } = data;
+
+    try {
+      // Deduct gold from sender if any
+      if (gold > 0) {
+        const sender = await db.player.findUnique({ where: { id: fromId } });
+        if (!sender || sender.gold < gold) {
+          socket.emit('error', { message: 'Not enough gold' });
+          return;
+        }
+        await db.player.update({ where: { id: fromId }, data: { gold: { decrement: gold } } });
+        await db.player.update({ where: { id: toPlayerId }, data: { gold: { increment: gold } } });
+      }
+
+      // Notify recipient
+      io.to(`player:${toPlayerId}`).emit('trade:gift:received', {
+        fromUsername: from.username,
+        gold, items,
+      });
+
+      console.log(`[Gift] ${from.username} → ${toPlayerId}: ${gold}g, items:${JSON.stringify(items)}`);
+    } catch (err) {
+      console.error('[Gift]', err.message);
+      socket.emit('error', { message: 'Gift failed: ' + err.message });
+    }
+  });
+
   socket.on('disconnect', () => {
     const playerId = connected.get(socket.id);
     if (playerId) {
@@ -672,6 +812,10 @@ io.on('connection', socket => {
       connected.delete(socket.id);
       onlinePlayers.delete(playerId);
       pendingInvites.delete(playerId);
+      // Clean up any pending trades involving this player
+      for (const [id, trade] of pendingTrades.entries()) {
+        if (trade.fromId === playerId || trade.toId === playerId) pendingTrades.delete(id);
+      }
       io.to(player?.room || 'world').emit('world:player_left', { playerId });
       console.log(`[Socket] ${player?.username} disconnected. Online: ${onlinePlayers.size}`);
     }
