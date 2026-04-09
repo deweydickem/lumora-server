@@ -105,10 +105,36 @@ app.post('/api/player/login', async (req, res) => {
       });
     }
 
-    res.json({ player });
+    res.json({ player: { ...player, gear: player.gear, inventoryExt: player.inventoryExt, ownedParcels: player.ownedParcels } });
   } catch (err) {
     console.error('[Login]', err.message);
     res.status(500).json({ error: 'Login failed: ' + err.message });
+  }
+});
+
+
+// ── SAVE PLAYER STATE ─────────────────────────────────────────────────────────
+app.post('/api/player/save', async (req, res) => {
+  try {
+    const { playerId, gear, inventoryExt, ownedParcels, gold, seeds, upgrades } = req.body;
+    if (!playerId) return res.status(400).json({ error: 'No playerId' });
+
+    const updated = await db.player.update({
+      where: { id: playerId },
+      data: {
+        gear:         gear         || undefined,
+        inventoryExt: inventoryExt || undefined,
+        ownedParcels: ownedParcels !== undefined ? ownedParcels : undefined,
+        gold:         gold         !== undefined ? gold         : undefined,
+        seeds:        seeds        !== undefined ? seeds        : undefined,
+        upgrades:     upgrades     || undefined,
+        lastSeenAt:   new Date(),
+      },
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[Save]', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
