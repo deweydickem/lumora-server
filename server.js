@@ -106,7 +106,7 @@ app.post('/api/player/login', async (req, res) => {
       });
     }
 
-    res.json({ player: { ...player, gear: player.gear, inventoryExt: player.inventoryExt, ownedParcels: player.ownedParcels } });
+    res.json({ player: { ...player, gear: player.gear, inventoryExt: player.inventoryExt, ownedParcels: player.ownedParcels, farmAnimals: player.farmAnimals, activePets: player.activePets, ownedPets: player.ownedPets } });
   } catch (err) {
     console.error('[Login]', err.message);
     res.status(500).json({ error: 'Login failed: ' + err.message });
@@ -117,7 +117,7 @@ app.post('/api/player/login', async (req, res) => {
 // ── SAVE PLAYER STATE ─────────────────────────────────────────────────────────
 app.post('/api/player/save', async (req, res) => {
   try {
-    const { playerId, gear, inventoryExt, ownedParcels, gold, seeds, upgrades } = req.body;
+    const { playerId, gear, inventoryExt, ownedParcels, gold, seeds, upgrades, farmAnimals, activePets, ownedPets } = req.body;
     if (!playerId) return res.status(400).json({ error: 'No playerId' });
 
     const updated = await db.player.update({
@@ -126,6 +126,9 @@ app.post('/api/player/save', async (req, res) => {
         gear:         gear         || undefined,
         inventoryExt: inventoryExt || undefined,
         ownedParcels: ownedParcels !== undefined ? ownedParcels : undefined,
+        farmAnimals:  farmAnimals  !== undefined ? farmAnimals  : undefined,
+        activePets:   activePets   !== undefined ? activePets   : undefined,
+        ownedPets:    ownedPets    !== undefined ? ownedPets    : undefined,
         gold:         gold         !== undefined ? gold         : undefined,
         seeds:        seeds        !== undefined ? seeds        : undefined,
         upgrades:     upgrades     || undefined,
@@ -135,6 +138,67 @@ app.post('/api/player/save', async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('[Save]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ── DEV WIPE — reset a player completely ─────────────────────────────────────
+app.post('/api/dev/wipe-player', async (req, res) => {
+  const { playerId, secret } = req.body;
+  if (secret !== process.env.DEV_SECRET && secret !== 'lumora-dev-2024') {
+    return res.status(403).json({ error: 'Bad secret' });
+  }
+  try {
+    await db.player.update({
+      where: { id: playerId },
+      data: {
+        gold: 5, seeds: 5, lumiBalance: 0, lumiTotal: 0,
+        inventory: { WHEAT:0, CARROT:0, CORN:0, bread:0, stew:0, wrap:0, ale:0 },
+        upgrades:  { scarecrow:0, irr:0, barn:0, fert:0 },
+        gear:      { shotgun:false, ammo:0, rod:false, bait:0, axe:false, pickaxe:false, huntingLicense:false, fishingLicense:false, timberPermit:false },
+        inventoryExt: { feathers:0, meat:0, fish:0, wood:0, stone:0, goldNugget:0, diamond:0, legendaryPelt:0, ancientWood:0, enchantedBranch:0, pearl:0, ancientCoin:0, ancientSeed:0, fence_kits:0 },
+        ownedParcels: [],
+        farmAnimals: [],
+        activePets: [],
+        ownedPets: [],
+      }
+    });
+    // Reset plots
+    await db.plot.updateMany({
+      where: { playerId },
+      data: { state:'EMPTY', cropType:null, plantedAt:null, readyAt:null, isWatered:false, fertility:0.1 }
+    });
+    // Reset skills
+    await db.playerSkill.updateMany({
+      where: { playerId },
+      data: { xp:0, level:1 }
+    });
+    console.log('[DevWipe] Player', playerId, 'wiped');
+    res.json({ ok: true, message: 'Player wiped to fresh state' });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ── DEV WIPE (protected by secret) ───────────────────────────────────────────
+app.post('/api/dev/wipe', async (req, res) => {
+  if (req.body.secret !== 'lumora_dev_2024') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  try {
+    await db.nPCRelationship.deleteMany({});
+    await db.playerSkill.deleteMany({});
+    await db.plot.deleteMany({});
+    await db.player.deleteMany({});
+    // Reset market prices
+    await db.marketPrice.deleteMany({});
+    // Kick all connected players
+    io.emit('server:full', { message: 'Server wiped by admin. Please refresh and rejoin!' });
+    console.log('[DEV] Full wipe completed');
+    res.json({ message: 'All player data wiped. ' + (await db.player.count()) + ' players remaining.' });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -599,7 +663,12 @@ io.on('connection', socket => {
     io.to('world').emit('world:player_left', { playerId });
 
     const plots = await db.plot.findMany({ where: { playerId: data.farmOwnerId }, orderBy: [{ row: 'asc' }, { col: 'asc' }] });
-    socket.emit('farm:state', { farmOwnerId: data.farmOwnerId, isOwner, plots });
+    const owner = await db.player.findUnique({ where: { id: data.farmOwnerId }, select: { farmAnimals: true, activePets: true } });
+    socket.emit('farm:state', {
+      farmOwnerId: data.farmOwnerId, isOwner, plots,
+      farmAnimals: owner?.farmAnimals || [],
+      activePets:  owner?.activePets  || [],
+    });
     socket.to(room).emit('farm:player_joined', { playerId, username: player.username, isOwner });
     if (!isOwner) io.to(`player:${data.farmOwnerId}`).emit('farm:guest_arrived', { guestId: playerId, guestUsername: player.username });
   });
