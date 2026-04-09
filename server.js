@@ -636,14 +636,14 @@ io.on('connection', socket => {
     // Send snapshot of who's in Havenfield
     const others = [...onlinePlayers.entries()]
       .filter(([pid, p]) => pid !== playerId && p.room === 'world')
-      .map(([pid, p]) => ({ playerId: pid, username: p.username, x: p.x, y: p.y, dir: p.dir }));
+      .map(([pid, p]) => ({ playerId: pid, username: p.username, x: p.x, y: p.y, dir: p.dir, followingPet: p.followingPet||null }));
     socket.emit('world:online_players', others);
 
     // Send any pending invite
     if (pendingInvites.has(playerId)) socket.emit('farm:invite_received', pendingInvites.get(playerId));
 
     // Announce to world
-    socket.to('world').emit('world:player_joined', { playerId, username, x, y, dir: 2 });
+    socket.to('world').emit('world:player_joined', { playerId, username, x, y, dir: 2, followingPet: null });
     console.log(`[Socket] ${username} joined. Online: ${onlinePlayers.size}`);
   });
 
@@ -692,7 +692,7 @@ io.on('connection', socket => {
     socket.to('world').emit('world:player_joined', { playerId, username: player.username, x: 8, y: 14, dir: 2 });
     const others = [...onlinePlayers.entries()]
       .filter(([pid, p]) => pid !== playerId && p.room === 'world')
-      .map(([pid, p]) => ({ playerId: pid, username: p.username, x: p.x, y: p.y, dir: p.dir }));
+      .map(([pid, p]) => ({ playerId: pid, username: p.username, x: p.x, y: p.y, dir: p.dir, followingPet: p.followingPet||null }));
     socket.emit('world:online_players', others);
   });
 
@@ -721,8 +721,8 @@ io.on('connection', socket => {
     const playerId = connected.get(socket.id);
     if (!playerId) return;
     const player = onlinePlayers.get(playerId);
-    if (player) { player.x = data.x; player.y = data.y; player.dir = data.dir; }
-    socket.to(player?.room || 'world').emit('player:moved', { playerId, username: player?.username, x: data.x, y: data.y, dir: data.dir });
+    if (player) { player.x = data.x; player.y = data.y; player.dir = data.dir; player.followingPet = data.followingPet||null; }
+    socket.to(player?.room || 'world').emit('player:moved', { playerId, username: player?.username, x: data.x, y: data.y, dir: data.dir, followingPet: data.followingPet||null });
   });
 
   socket.on('chat:message', async data => {
