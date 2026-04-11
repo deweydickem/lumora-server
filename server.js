@@ -667,15 +667,21 @@ io.on('connection', socket => {
 
     io.to('world').emit('world:player_left', { playerId });
 
-    const plots = await db.plot.findMany({ where: { playerId: data.farmOwnerId }, orderBy: [{ row: 'asc' }, { col: 'asc' }] });
-    const owner = await db.player.findUnique({ where: { id: data.farmOwnerId }, select: { farmAnimals: true, activePets: true } });
-    socket.emit('farm:state', {
-      farmOwnerId: data.farmOwnerId, isOwner, plots,
-      farmAnimals: owner?.farmAnimals || [],
-      activePets:  owner?.activePets  || [],
-    });
-    socket.to(room).emit('farm:player_joined', { playerId, username: player.username, isOwner });
-    if (!isOwner) io.to(`player:${data.farmOwnerId}`).emit('farm:guest_arrived', { guestId: playerId, guestUsername: player.username });
+    try {
+      const plots = await db.plot.findMany({ where: { playerId: data.farmOwnerId }, orderBy: [{ row: 'asc' }, { col: 'asc' }] });
+      const owner = await db.player.findUnique({ where: { id: data.farmOwnerId }, select: { farmAnimals: true, activePets: true } });
+      socket.emit('farm:state', {
+        farmOwnerId: data.farmOwnerId, isOwner, plots,
+        farmAnimals: owner?.farmAnimals || [],
+        activePets:  owner?.activePets  || [],
+      });
+      socket.to(room).emit('farm:player_joined', { playerId, username: player.username, isOwner });
+      if (!isOwner) io.to(`player:${data.farmOwnerId}`).emit('farm:guest_arrived', { guestId: playerId, guestUsername: player.username });
+    } catch(err) {
+      console.error('[farm:enter]', err.message);
+      // Still send farm:state so client doesn't hang — empty plots
+      socket.emit('farm:state', { farmOwnerId: data.farmOwnerId, isOwner, plots: [], farmAnimals: [], activePets: [] });
+    }
   });
 
   socket.on('farm:leave', async () => {
