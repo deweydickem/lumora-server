@@ -21,30 +21,30 @@ const GROQ_MODEL   = (process.env.GROQ_MODEL || 'llama-3.3-70b-versatile').trim(
 const GROQ_URL     = 'https://api.groq.com/openai/v1/chat/completions';
 
 const NPC_BIOS = {
-  Mira: {
-    fullName: 'Mira Brynn', age: 41,
+  Deb: {
+    fullName: 'Deb Garvish', age: 41,
     bio: `Born on the north fields of Havenfield. Fourth generation. Parents died in the Great Drought when she was six; raised by her grandmother Ma Brynn. Had a twin brother, Silas — died in a market brawl at twenty-three. Was engaged to Tomas the beekeeper; he died of a bee-sting allergy three weeks before the wedding. Never married. Runs the farm alone, drinks any merchant in town under the table, still weeps every late-autumn harvest.`,
-    privateLife: `Keeps a jar of honey on her bedside table because it reminds her of Tomas's hands. Has watched the young farmhands shirtless from her porch. Sings filthy drinking songs to her goats. Once kissed Lyra at a midsummer festival and neither of them has spoken of it since.`,
+    privateLife: `Keeps a jar of honey on her bedside table because it reminds her of Tomas's hands. Has watched the young farmhands shirtless from her porch. Sings filthy drinking songs to her goats. Once kissed Tammy at a midsummer festival and neither of them has spoken of it since.`,
     loves: 'honey on dark bread, the smell of hay after rain, a well-told dirty joke, her goats',
     fears: 'losing the farm, the drought returning, dying alone, forgetting Tomas\'s face',
     quirks: 'refuses to kill spiders, cries at harvest, can out-drink anyone, tucks flowers into her hair',
     humor: `Earthy, warm, sharp once she's two ales in. Loves puns about plowing, seeding, 'getting your hands dirty'. Goes bawdy fast with people she trusts.`,
     signatureJoke: `"Why do farmers make the best lovers? We know exactly when to plow, when to sow, and when to just stand there and let the rain do the work."`,
   },
-  Finn: {
-    fullName: 'Finnian Acker', age: 34,
-    bio: `Born in a port city. Father a merchant who made and lost three fortunes; died in debtor's prison when Finn was twelve. Mother died of plague when he was seventeen. Came to Havenfield at twenty-two with borrowed gold. Cornered the wheat market three seasons running. Single, lives above the Grain Exchange.`,
+  Todd: {
+    fullName: 'Todd Schott', age: 34,
+    bio: `Born in a port city. Father a merchant who made and lost three fortunes; died in debtor's prison when Todd was twelve. Mother died of plague when he was seventeen. Came to Havenfield at twenty-two with borrowed gold. Cornered the wheat market three seasons running. Single, lives above the Grain Exchange.`,
     privateLife: `On-again off-again correspondence with Lira, a courtesan in the capital who understands numbers better than most bankers. Keeps every letter she's sent in a locked cedar box under his bed. Tips his hat to stray cats. Hates — HATES — how much he secretly enjoys being called handsome.`,
     loves: 'the sound of coins being counted, Lira\'s handwriting, clever people, a well-structured deal',
     fears: 'dying broke like his father, being swindled in public, being loved for his gold and not himself',
     quirks: 'counts coins twice, owns nine hats, refuses to eat fish, tips stray cats',
-    humor: `Cynical and quick. Pun-heavy around money: 'liquidity', 'hard assets', 'returns on investment'. Unexpectedly sweet on Mira.`,
+    humor: `Cynical and quick. Pun-heavy around money: 'liquidity', 'hard assets', 'returns on investment'. Unexpectedly sweet on Deb.`,
     signatureJoke: `"The difference between farming and finance? In finance, when you get screwed, at least you get a receipt."`,
   },
-  Lyra: {
-    fullName: 'Lyra of the Wind', age: 'uncertain',
+  Tammy: {
+    fullName: 'Tammy Krentz', age: 'uncertain',
     bio: `Came to Havenfield 'following a feeling in the wind.' The real story: fled a high-northern cloister after having a prophetic vision of her abbess's death that came true within the week. Spent three years as a wandering oracle before settling. Claims to be thirty. Has prophetic dreams most nights.`,
-    privateLife: `Celibate by choice, not by lack of interest. Keeps a hidden book of erotic verse translated from a dead southern language and reads it by candlelight most nights. Has had a recurring vision about the player for six months. Kissed Mira at a midsummer festival years ago.`,
+    privateLife: `Celibate by choice, not by lack of interest. Keeps a hidden book of erotic verse translated from a dead southern language and reads it by candlelight most nights. Has had a recurring vision about the player for six months. Kissed Deb at a midsummer festival years ago.`,
     loves: 'candlelight, rain on stone, the half-second before someone tells the truth, bawdy poetry from civilizations nobody remembers',
     fears: 'the vision about the player, her own memory, becoming what her abbess became',
     quirks: 'speaks to the wind, sings in a language nobody else recognizes, reads filth by candlelight',
@@ -64,17 +64,17 @@ const NPC_BIOS = {
 };
 
 const NPC_BACKSTORIES_EXTRA = {
-  Mira: [
-    "I kissed Lyra at a midsummer festival, years ago. Neither of us has said a word about it.",
+  Deb: [
+    "I kissed Tammy at a midsummer festival, years ago. Neither of us has said a word about it.",
     "Tomas — the beekeeper I was going to marry — his hands always smelled like honey. I keep a jar by my bed.",
     "I watch the farmhands from my porch sometimes. Bare chests, sweating in the sun. I've earned the view.",
   ],
-  Finn: [
+  Todd: [
     "There's a woman in the capital named Lira. She writes me. I keep every letter in a cedar box under my bed.",
     "My father died in debtor's prison. I have forty-two ledgers. I still sleep with one hand on the closest one.",
     "The worst thing about being called handsome is how much I like it.",
   ],
-  Lyra: [
+  Tammy: [
     "I have been having a vision about you for six months. I will tell you what it is the day you are ready.",
     "I am celibate by choice. I read the old southern erotic verses by candlelight. Ask me to translate a line sometime.",
     "I knew Dale's partner's name before he said it. Her name was Voss. She is not dead the way he thinks she is.",
@@ -220,9 +220,9 @@ const SEASON_EFFECTS = {
 };
 
 const NPC_GIFTS = {
-  Mira: { likes: ['WHEAT','CARROT','bread','stew'], loved: 'stew' },
-  Finn: { likes: ['ale','CORN','wrap','CARROT'],    loved: 'ale'  },
-  Lyra: { likes: ['CORN','GOLDEN_WHEAT','WHEAT','bread'], loved: 'CORN' },
+  Deb: { likes: ['WHEAT','CARROT','bread','stew'], loved: 'stew' },
+  Todd: { likes: ['ale','CORN','wrap','CARROT'],    loved: 'ale'  },
+  Tammy: { likes: ['CORN','GOLDEN_WHEAT','WHEAT','bread'], loved: 'CORN' },
 };
 
 // ── GAME STATE ────────────────────────────────────────────────────────────────
@@ -729,9 +729,9 @@ app.post('/api/relationships/gift', async (req, res) => {
     ]);
 
     const responses = {
-      Mira: { WHEAT: ['Oh, fresh wheat! You remembered 🌾'], stew: ['You made me stew? I am touched 🥣'], default: ['Thank you, that is so sweet 💙'] },
-      Finn: { ale: ['Harvest Ale. You know me well 🍺'], CORN: ['Good margins on corn. Appreciate it 📈'], default: ['Unexpected. Appreciated.'] },
-      Lyra: { CORN: ['Corn... the grain that remembers 🌽'], GOLDEN_WHEAT: ['Golden wheat. The soil truly trusts you 🌟'], default: ['A gift freely given. The land notices 🌙'] },
+      Deb: { WHEAT: ['Oh, fresh wheat! You remembered 🌾'], stew: ['You made me stew? I am touched 🥣'], default: ['Thank you, that is so sweet 💙'] },
+      Todd: { ale: ['Harvest Ale. You know me well 🍺'], CORN: ['Good margins on corn. Appreciate it 📈'], default: ['Unexpected. Appreciated.'] },
+      Tammy: { CORN: ['Corn... the grain that remembers 🌽'], GOLDEN_WHEAT: ['Golden wheat. The soil truly trusts you 🌟'], default: ['A gift freely given. The land notices 🌙'] },
     };
     const npcResponses = responses[npcName] || { default: ['Thank you!'] };
     const pool = npcResponses[item] || npcResponses.default;
@@ -747,7 +747,7 @@ app.post('/api/relationships/gift', async (req, res) => {
 app.get('/api/relationships/:playerId', async (req, res) => {
   try {
     const rels = await db.nPCRelationship.findMany({ where: { playerId: req.params.playerId } });
-    const result = ['Mira','Finn','Lyra'].map(name => {
+    const result = ['Deb','Todd','Tammy'].map(name => {
       const rel = rels.find(r => r.npcName === name);
       const hearts = rel?.hearts || 0;
       return { npcName: name, hearts, tier: Math.floor(hearts/3), lastGiftAt: rel?.lastGiftAt, totalGifts: rel?.totalGifts || 0, favourites: NPC_GIFTS[name].likes, lovedGift: NPC_GIFTS[name].loved };
