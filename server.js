@@ -420,10 +420,10 @@ app.post('/api/farm/till', async (req, res) => {
     const { playerId, plotId } = req.body;
     const plot = await db.plot.findFirst({ where: { id: plotId, playerId } });
     if (!plot) return res.status(404).json({ error: 'Plot not found' });
-    if (plot.isLocked) return res.status(400).json({ error: 'Plot is locked' });
-    if (plot.state !== 'EMPTY') return res.status(400).json({ error: 'Plot is not empty' });
+    if (plot.state !== 'EMPTY' && !plot.isLocked) return res.status(400).json({ error: 'Plot is not empty' });
 
-    const updated = await db.plot.update({ where: { id: plotId }, data: { state: 'TILLED' } });
+    // Hoe clears wild grass (locked) and tills in one action
+    const updated = await db.plot.update({ where: { id: plotId }, data: { state: 'TILLED', isLocked: false } });
     const levelUps = await awardXP(playerId, 'FARMING', 8);
     res.json({ plot: updated, levelUps });
   } catch (err) {
