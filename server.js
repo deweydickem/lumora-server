@@ -349,7 +349,7 @@ app.post('/api/dev/wipe-player', async (req, res) => {
     await db.player.update({
       where: { id: playerId },
       data: {
-        gold: 5, seeds: 5, lumiBalance: 0, lumiTotal: 0,
+        gold: 20, seeds: 5, lumiBalance: 0, lumiTotal: 0,
         inventory: { WHEAT:0, CARROT:0, CORN:0, POTATO:0, TOMATO:0, PUMPKIN:0, STRAWBERRY:0, SUNFLOWER:0, RICE:0, bread:0, stew:0, wrap:0, ale:0, fries:0, salad:0, pie:0, jam:0, sushi:0, sunOil:0, goulash:0, risotto:0, strawCake:0, pumpkinSoup:0, fishPie:0, feast:0, elixir:0, perfume:0 },
         upgrades:  { scarecrow:0, irr:0, barn:0, fert:0 },
         gear:      { shotgun:false, ammo:0, rod:false, bait:0, axe:false, pickaxe:false, huntingLicense:false, fishingLicense:false, timberPermit:false },
