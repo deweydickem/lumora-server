@@ -201,14 +201,34 @@ const CROP_CONFIG = {
   WHEAT:        { growMs: 2  * 60 * 60 * 1000, basePrice: 2,  xp: 20 },
   CARROT:       { growMs: 8  * 60 * 60 * 1000, basePrice: 5,  xp: 35 },
   CORN:         { growMs: 24 * 60 * 60 * 1000, basePrice: 8,  xp: 50 },
+  POTATO:       { growMs: 6  * 60 * 60 * 1000, basePrice: 4,  xp: 30 },
+  TOMATO:       { growMs: 10 * 60 * 60 * 1000, basePrice: 6,  xp: 40 },
+  PUMPKIN:      { growMs: 36 * 60 * 60 * 1000, basePrice: 14, xp: 70 },
+  STRAWBERRY:   { growMs: 4  * 60 * 60 * 1000, basePrice: 3,  xp: 25 },
+  SUNFLOWER:    { growMs: 16 * 60 * 60 * 1000, basePrice: 10, xp: 55 },
+  RICE:         { growMs: 12 * 60 * 60 * 1000, basePrice: 7,  xp: 45 },
   GOLDEN_WHEAT: { growMs: 30 * 60 * 1000,       basePrice: 0,  xp: 200 },
 };
 
 const RECIPE_CONFIG = {
-  bread: { ingredients: { WHEAT: 3 },                    craftMs: 1*60*60*1000,  value: 18, lumi: 2, xp: 40  },
-  stew:  { ingredients: { WHEAT: 1, CARROT: 2, CORN: 1 }, craftMs: 4*60*60*1000,  value: 28, lumi: 2, xp: 80  },
-  wrap:  { ingredients: { CORN: 2, CARROT: 1 },           craftMs: 2*60*60*1000,  value: 22, lumi: 2, xp: 60  },
-  ale:   { ingredients: { WHEAT: 2, CORN: 2 },            craftMs: 6*60*60*1000,  value: 38, lumi: 3, xp: 120 },
+  bread:        { ingredients: { WHEAT: 3 },                          craftMs: 1*60*60*1000,   value: 18,  lumi: 2, xp: 40  },
+  stew:         { ingredients: { WHEAT: 1, CARROT: 2, CORN: 1 },     craftMs: 4*60*60*1000,   value: 28,  lumi: 2, xp: 80  },
+  wrap:         { ingredients: { CORN: 2, CARROT: 1 },               craftMs: 2*60*60*1000,   value: 22,  lumi: 2, xp: 60  },
+  ale:          { ingredients: { WHEAT: 2, CORN: 2 },                craftMs: 6*60*60*1000,   value: 38,  lumi: 3, xp: 120 },
+  fries:        { ingredients: { POTATO: 3 },                        craftMs: 45*60*1000,     value: 15,  lumi: 1, xp: 35  },
+  salad:        { ingredients: { TOMATO: 2, CARROT: 1 },             craftMs: 30*60*1000,     value: 20,  lumi: 1, xp: 45  },
+  pie:          { ingredients: { PUMPKIN: 1, WHEAT: 2 },             craftMs: 3*60*60*1000,   value: 35,  lumi: 2, xp: 90  },
+  jam:          { ingredients: { STRAWBERRY: 4 },                    craftMs: 1.5*60*60*1000, value: 22,  lumi: 2, xp: 50  },
+  sushi:        { ingredients: { RICE: 3, fish: 1 },                 craftMs: 2*60*60*1000,   value: 45,  lumi: 3, xp: 100 },
+  sunOil:       { ingredients: { SUNFLOWER: 3 },                     craftMs: 2*60*60*1000,   value: 40,  lumi: 2, xp: 75  },
+  goulash:      { ingredients: { POTATO: 2, TOMATO: 2, meat: 1 },   craftMs: 5*60*60*1000,   value: 55,  lumi: 3, xp: 120 },
+  risotto:      { ingredients: { RICE: 2, TOMATO: 1, CORN: 1 },     craftMs: 3*60*60*1000,   value: 42,  lumi: 2, xp: 95  },
+  strawCake:    { ingredients: { STRAWBERRY: 3, WHEAT: 2, egg: 1 },  craftMs: 4*60*60*1000,   value: 80,  lumi: 3, xp: 130 },
+  pumpkinSoup:  { ingredients: { PUMPKIN: 2, milk: 1 },              craftMs: 2*60*60*1000,   value: 60,  lumi: 2, xp: 100 },
+  fishPie:      { ingredients: { fish: 2, POTATO: 2, WHEAT: 1 },    craftMs: 4*60*60*1000,   value: 70,  lumi: 3, xp: 115 },
+  feast:        { ingredients: { CORN: 2, POTATO: 2, PUMPKIN: 1, meat: 1 }, craftMs: 8*60*60*1000, value: 120, lumi: 5, xp: 200 },
+  elixir:       { ingredients: { STRAWBERRY: 2, SUNFLOWER: 1, herbs: 3 },  craftMs: 6*60*60*1000, value: 95,  lumi: 4, xp: 160 },
+  perfume:      { ingredients: { SUNFLOWER: 2, STRAWBERRY: 2 },     craftMs: 5*60*60*1000,   value: 75,  lumi: 3, xp: 140 },
 };
 
 const SEASONS = ['SUMMER','AUTUMN','WINTER','SPRING'];
@@ -220,9 +240,9 @@ const SEASON_EFFECTS = {
 };
 
 const NPC_GIFTS = {
-  Deb: { likes: ['WHEAT','CARROT','bread','stew'], loved: 'stew' },
-  Todd: { likes: ['ale','CORN','wrap','CARROT'],    loved: 'ale'  },
-  Tammy: { likes: ['CORN','GOLDEN_WHEAT','WHEAT','bread'], loved: 'CORN' },
+  Deb: { likes: ['WHEAT','CARROT','bread','stew','jam','STRAWBERRY'], loved: 'stew' },
+  Todd: { likes: ['ale','CORN','wrap','CARROT','sunOil','PUMPKIN'],    loved: 'ale'  },
+  Tammy: { likes: ['CORN','GOLDEN_WHEAT','WHEAT','bread','elixir','RICE'], loved: 'elixir' },
 };
 
 // ── GAME STATE ────────────────────────────────────────────────────────────────
@@ -330,10 +350,10 @@ app.post('/api/dev/wipe-player', async (req, res) => {
       where: { id: playerId },
       data: {
         gold: 5, seeds: 5, lumiBalance: 0, lumiTotal: 0,
-        inventory: { WHEAT:0, CARROT:0, CORN:0, bread:0, stew:0, wrap:0, ale:0 },
+        inventory: { WHEAT:0, CARROT:0, CORN:0, POTATO:0, TOMATO:0, PUMPKIN:0, STRAWBERRY:0, SUNFLOWER:0, RICE:0, bread:0, stew:0, wrap:0, ale:0, fries:0, salad:0, pie:0, jam:0, sushi:0, sunOil:0, goulash:0, risotto:0, strawCake:0, pumpkinSoup:0, fishPie:0, feast:0, elixir:0, perfume:0 },
         upgrades:  { scarecrow:0, irr:0, barn:0, fert:0 },
         gear:      { shotgun:false, ammo:0, rod:false, bait:0, axe:false, pickaxe:false, huntingLicense:false, fishingLicense:false, timberPermit:false },
-        inventoryExt: { feathers:0, meat:0, fish:0, wood:0, stone:0, goldNugget:0, diamond:0, legendaryPelt:0, ancientWood:0, enchantedBranch:0, pearl:0, ancientCoin:0, ancientSeed:0, fence_kits:0 },
+        inventoryExt: { feathers:0, meat:0, fish:0, wood:0, stone:0, goldNugget:0, diamond:0, legendaryPelt:0, ancientWood:0, enchantedBranch:0, pearl:0, ancientCoin:0, ancientSeed:0, fence_kits:0, berries:0, mushrooms:0, herbs:0, flowers:0, truffles:0 },
         ownedParcels: [],
         farmAnimals: [],
         activePets: [],
