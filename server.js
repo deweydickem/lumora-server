@@ -257,6 +257,11 @@ let gameState = {
 const craftJobs    = new Map(); // jobId → { playerId, recipe, completesAt }
 const pendingTrades = new Map(); // tradeId → trade object
 
+// ── ROOT ─────────────────────────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.json({ name: 'Lumora Server', status: 'running', version: '0.3.1' });
+});
+
 // ── HEALTH ────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', season: gameState.season, blockMultiplier: gameState.blockMult, online: onlinePlayers.size });
@@ -378,9 +383,11 @@ app.post('/api/dev/wipe-player', async (req, res) => {
 });
 
 
-// ── DEV WIPE (protected by secret) ───────────────────────────────────────────
+// ── DEV WIPE (protected by secret or admin username) ────────────────────────
+const ADMIN_USERS = ['dewey', 'deweydickem'];
 app.post('/api/dev/wipe', async (req, res) => {
-  if (req.body.secret !== 'lumora_dev_2024') {
+  const isAdmin = ADMIN_USERS.includes((req.body.user || '').toLowerCase()) || req.body.secret === 'lumora_dev_2024';
+  if (!isAdmin) {
     return res.status(403).json({ error: 'Forbidden' });
   }
   try {
