@@ -384,7 +384,7 @@ app.post('/api/dev/wipe-player', async (req, res) => {
 
 
 // ── DEV WIPE (protected by secret or admin username) ────────────────────────
-const ADMIN_USERS = ['dewey', 'deweydickem'];
+const ADMIN_USERS = ['dewey', 'dewey2', 'deweydickem'];
 app.post('/api/dev/wipe', async (req, res) => {
   const isAdmin = ADMIN_USERS.includes((req.body.user || '').toLowerCase()) || req.body.secret === 'lumora_dev_2024';
   if (!isAdmin) {
